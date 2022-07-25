@@ -7,23 +7,23 @@ import serial,time
 from empaquetador import empaquetar
 
 class robot:
-    _pos = [0,0,0,0]
-    _d = [0,0,0,0,0]
-    _alfa = [-pi/2,0,0,pi/2,0]
-    _a = [0,115,117,25,0]
+    _pos = [0,0,0,0] #pose del robot actual, no tocar
+    _d = [0,0,0,0,0] #parametro de dh d
+    _alfa = [-pi/2,0,0,pi/2,0] #parametro de dh alfa 
+    _a = [0,115,117,25,0] #parametro de dh a
     _vth_max = (5/3)*pi
-    _home = [50,0,0,0]
+    _home = [50,0,0,0] #home del robot, tocar con cuidado
 
-    Ts = 20*10**(-3)
-    offsets_motores = [95,50,90,85]
-    theta = [0,0,0,0]
-    A04 = eye(4)
-    A_base = eye(4)
-    A_herr = eye(4)
-    gripper = 0
-    motors = 0
+    Ts = 20*10**(-3) #sample time del ciclo de control, si se modifica modificar tambien en el arduino
+    offsets_motores = [95,50,90,85] #cuan torcidos pusiste los motores, con esto se ajusta para calibrar los angulos
+    theta = [0,0,0,0] #parametro de dh theta, que ademas es la posicion de los motores
+    A04 = eye(4) #transformacion que representa la pose actual del robot, tocar con cuidadoy de preferencia no tocar
+    A_base = eye(4) #transformacion que representa la base del robot, asi toma el 0 en el cruce entre los ejes 1 y 2
+    A_herr = eye(4) #transformcacion que representa la herramienta
+    gripper = 0 #estado del gripper, 1 andando, 0 apagado
+    motors = 0 #estado de los motores, 1 andando, 0 apagados
     puerto = 'COM5' # esto va a cambiar segun donde se conecte y hasta ahora no se como hacer para autodetectarlo
-    brate = 115200
+    brate = 115200 #baudrate, no tocar o si se toca cambiar tambien del arduino
 #-------------------------------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------------------------------
@@ -115,7 +115,8 @@ class robot:
     def inv_cinematics(self,Abb):
         return self.inv_cinematics_c(Abb,1)
 #-------------------------------------------------------------------------------------------------------
-# metodo que inicia la posicion del robot y lo manda a home
+# metodo que inicia la posicion del robot y lo manda a home, no se por que pero cuando se establece la coneccion
+# algo raro le pasa al arduino y el motor se mueve para cualquier lado o en el mejor de los casos apaga los motores
     def inicar(self):
         self.A04 = P2A (self._home)
         self._pos = self._home
@@ -144,13 +145,14 @@ class robot:
         self._pos = pose
         self.theta = Q
 #-------------------------------------------------------------------------------------------------------
+# metodo que hace los movimientos lineales, los hace con muchos movimientos joint chiquitos
     def moveL(self,pose,tiempo):
         N_steps = tiempo/self.Ts
         for i in range(0,int(N_steps),1):
             dx = (pose[0] - self._pos[0])/(N_steps - i)
             dy = (pose[1] - self._pos[1])/(N_steps - i)
             dz = (pose[2] - self._pos[2])/(N_steps - i)
-            dth = (pose[3] - self._pos[3])/(N_steps - i)
+            dth= (pose[3] - self._pos[3])/(N_steps - i)
             
             #self._pos = self._pos + [dx,dy,dz,dth]
             self._pos[0] = self._pos[0] + dx
@@ -165,26 +167,24 @@ class robot:
             self.stream(self.theta)
 
 #-------------------------------------------------------------------------------------------------------
-
+# metodo que envia el comando al robot, se podria hacer tambien que ademas de recibir un echo reciba informacion de sensores
     def stream(self,Q):
         startMarker = "."
         x = "z"
 
         paquete = empaquetar(self.dh2rob(Q),self.gripper,self.motors)
 
-        """while  x != startMarker.encode(): 
-            x = self.arduino.read()
-            #print (x)"""
 
         print (paquete.encode())
 
         self.arduino.write(paquete.encode())
 
-        while  x != startMarker.encode(): #me quedo esperando el echo
+        while  x != startMarker.encode(): #me quedo esperando el echo (por ahora no hay timeout)
             x = self.arduino.read()
 
         return 
 #-------------------------------------------------------------------------------------------------------
+# metodo que apaga el robot, en si lo que hace es liberar el puerto
     def shutdown(self):
         self.motors = 0
         self.gripper = 0
@@ -195,6 +195,7 @@ class robot:
         print("apagado")
         self.arduino.close()
 #-------------------------------------------------------------------------------------------------------
+# metodo que me pasa de los angulos en radianes de la cinematica a los angulos en grados que necesita el robot
     def dh2rob(self,Q):
         V = [0,0,0,0]
         V[0] = int(self.offsets_motores[0] + degrees(Q[0]))
