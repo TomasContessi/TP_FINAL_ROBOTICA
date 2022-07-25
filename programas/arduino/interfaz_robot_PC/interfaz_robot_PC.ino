@@ -12,7 +12,7 @@ int pwm4 = 5;        // uso la pata D5 para enviar el PWM al servo 4
 int gripper_out = 6; // uso la pata D6 para el gripper
 
 const int pinLED = 13;
-int Q[] = {90,150,47,90};
+int Q[] = {90,140,40,90};
 int gripper = 0;
 int motors = 0;
 // home <90:140:40:0>
@@ -36,16 +36,13 @@ void setup(){
   eje3.attach(pwm3);
   eje4.attach(pwm4);
 
-  /*eje1.write(Q[1]); 
-  eje2.write(Q[2]); 
-  eje3.write(Q[3]); 
-  eje4.write(Q[4]);*/
    
   Serial.begin(115200);
-  
+  Serial.write(".");
   pinMode(pinLED, OUTPUT);
   pinMode(gripper_out, OUTPUT);
   }
+
 
 void loop(){
   inicio=millis();                              // establesco un Ts de 20ms
@@ -60,15 +57,15 @@ void loop(){
     digitalWrite(pinLED, LOW);
     Serial.write(".");
     // actualizo los servos 
+    if (motors == 1)
+    {
+      eje1.write(Q[1]); 
+      eje2.write(Q[2]); 
+      eje3.write(Q[3]); 
+      eje4.write(Q[4]);
+    }
   }
-  //Serial.write(".");
-  if (motors == 1)
-  {
-    eje1.write(Q[1]); 
-    eje2.write(Q[2]); 
-    eje3.write(Q[3]); 
-    eje4.write(Q[4]);
-  }
+
 
   digitalWrite(gripper_out, gripper);
   while (fin > millis())  {}

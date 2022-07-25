@@ -15,7 +15,7 @@ class robot:
     _home = [50,0,0,0]
 
     Ts = 20*10**(-3)
-    offsets_motores = [90,50,90,85]
+    offsets_motores = [95,50,90,85]
     theta = [0,0,0,0]
     A04 = eye(4)
     A_base = eye(4)
@@ -123,7 +123,7 @@ class robot:
         self.arduino = serial.Serial(self.puerto,self.brate)
         self.arduino.flushInput()
         self.arduino.flushOutput()
-        time.sleep(2)
+        time.sleep(0.7)
         self.motors = 1
         self.homeJ()
 

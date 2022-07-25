@@ -7,7 +7,7 @@ Robot = robot()
 Robot.inicar()
 
 
-pose = [90,90,90,0]
+pose = [90,90,90,90]
 s1 = "100,0,0,0"
 
 while s1 != "end":
