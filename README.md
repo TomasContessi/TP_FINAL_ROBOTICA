@@ -19,3 +19,18 @@ Especificaciones del robot medidas en el prototipo final:
 - Repetitividad +-3mm
 - Exactitud +-5mm
 - Peso 934g
+
+# Videos del robot
+
+https://user-images.githubusercontent.com/55562600/180897072-30f60ed5-107a-4d38-ac05-319fecedbc43.mp4
+
+
+
+https://user-images.githubusercontent.com/55562600/180897452-3dd9bf58-14a9-4827-a617-9365f39d61e9.mp4
+
+
+
+
+https://user-images.githubusercontent.com/55562600/180897461-f654ef13-cb58-4b30-b609-2cc938e993c4.mp4
+
+
